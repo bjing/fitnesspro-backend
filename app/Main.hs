@@ -22,21 +22,10 @@ import Data.Text (Text)
 import Data.Aeson hiding (json)
 import qualified Data.Text.Lazy as TL
 
--- Setup request related metrics to monitor
-readCounters :: WaiMetrics -> IO()
-readCounters w = do
-  threadDelay 1000000
-  v1 <- Counter.read (requestCounter w)
-  v2 <- Counter.read (statusCode500Counter w)
-  v3 <- Distribution.mean <$> Distribution.read (latencyDistribution w)
-  -- print (v1, v2, v3)
-  readCounters w
-
 main = do
   putStrLn "Starting monitoring server..."
   store <- serverMetricStore <$> forkServer "0.0.0.0" 8000
   waiMetrics <- registerWaiMetrics store
-  forkIO $ readCounters waiMetrics
 
   putStrLn "Starting server..."
   scotty 3000 $ do
